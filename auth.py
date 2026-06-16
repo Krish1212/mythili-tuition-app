@@ -236,9 +236,6 @@ def create_session():
     uid = decoded_token.get('uid', '')
     name = decoded_token.get('name') or email
 
-    db_service = DatabaseService()
-    linked_student = db_service.find_student_by_user(email=email, uid=uid)
-
     if token_has_admin_claim(decoded_token) or email in admin_emails():
         sync_bootstrap_admin_claim(email)
         session['user'] = {
@@ -248,6 +245,16 @@ def create_session():
             'role': 'admin',
         }
         return jsonify({'success': True, 'redirect': url_for('index')})
+
+    try:
+        db_service = DatabaseService()
+        linked_student = db_service.find_student_by_user(email=email, uid=uid)
+    except Exception as error:
+        current_app.logger.exception('Unable to look up student account for %s: %s', email, error)
+        return jsonify({
+            'success': False,
+            'message': 'Unable to check this account against the tuition database. Please contact the administrator.',
+        }), 503
 
     if linked_student:
         if not linked_student.get('user_uid') and uid:
