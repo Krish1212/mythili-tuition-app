@@ -1,3 +1,6 @@
+import json
+import os
+
 from flask import jsonify, request
 from datetime import date
 from firebase_admin import firestore, credentials, get_app, initialize_app
@@ -7,8 +10,21 @@ def initialize_firebase_app():
     try:
         return get_app()
     except ValueError:
-        cred = credentials.Certificate('tution-master-79288-firebase-adminsdk-6qy9e-9f78189ca1.json')
-        return initialize_app(cred)
+        service_account_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON')
+        service_account_path = (
+            os.environ.get('FIREBASE_SERVICE_ACCOUNT_PATH')
+            or os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        )
+        project_id = os.environ.get('FIREBASE_PROJECT_ID')
+        options = {'projectId': project_id} if project_id else None
+
+        if service_account_json:
+            cred = credentials.Certificate(json.loads(service_account_json))
+        elif service_account_path:
+            cred = credentials.Certificate(service_account_path)
+        else:
+            cred = credentials.ApplicationDefault()
+        return initialize_app(cred, options=options)
 
 class DatabaseService:
     def __init__(self):

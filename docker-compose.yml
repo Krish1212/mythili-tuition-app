@@ -6,12 +6,24 @@ services:
     container_name: mythili_tuition_app
     ports:
       - "5000:5000"
-    volumes:
-      - .:/app
     environment:
       - FLASK_APP=wsgi:app
+      - FLASK_ENV=production
+      - APP_ENV=production
+      - SECRET_KEY=${SECRET_KEY}
       - ADMIN_EMAILS=${ADMIN_EMAILS}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_SERVICE_ACCOUNT_PATH=${FIREBASE_SERVICE_ACCOUNT_PATH}
+      - FIREBASE_SERVICE_ACCOUNT_JSON=${FIREBASE_SERVICE_ACCOUNT_JSON}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - FIREBASE_WEB_API_KEY=${FIREBASE_WEB_API_KEY}
+      - FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+      - FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+      - FIREBASE_WEB_APP_ID=${FIREBASE_WEB_APP_ID}
+      - FIREBASE_MEASUREMENT_ID=${FIREBASE_MEASUREMENT_ID}
+      - ENABLE_SWAGGER=${ENABLE_SWAGGER:-false}
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
-    command: gunicorn --bind 0.0.0.0:5000 --reload wsgi:app
+    command: gunicorn --workers 2 --bind 0.0.0.0:5000 wsgi:app

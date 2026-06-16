@@ -21,6 +21,7 @@
 
 <section class="panel form-panel">
     <form action="{{ url_for('students.create_student') }}" method="POST" id="create-form" class="needs-validation" novalidate>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="form-grid">
             <label>Name<input type="text" class="form-control" name="inputName" id="inputName" required></label>
             <label>Mobile<input type="text" class="form-control" name="inputMobile" id="inputMobile" required></label>

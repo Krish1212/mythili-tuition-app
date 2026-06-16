@@ -1,10 +1,12 @@
 import base64
+import hmac
 import json
 import os
+import secrets
 from functools import wraps
 
 from firebase_admin import auth as firebase_auth
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 
 try:
     from .db import DatabaseService, initialize_firebase_app
@@ -13,6 +15,8 @@ except ImportError:
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
+CSRF_EXEMPT_ENDPOINTS = {'auth.create_session'}
+CSRF_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
 
 
 def token_project_details(id_token):
@@ -52,6 +56,27 @@ def admin_emails():
 
 def current_user():
     return session.get('user')
+
+
+def csrf_token():
+    token = session.get('_csrf_token')
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session['_csrf_token'] = token
+    return token
+
+
+def validate_csrf_request():
+    if request.method not in CSRF_METHODS:
+        return None
+    if request.endpoint in CSRF_EXEMPT_ENDPOINTS:
+        return None
+
+    expected_token = session.get('_csrf_token')
+    supplied_token = request.form.get('_csrf_token') or request.headers.get('X-CSRFToken')
+    if not expected_token or not supplied_token or not hmac.compare_digest(expected_token, supplied_token):
+        return abort(400, description='Invalid CSRF token.')
+    return None
 
 
 def is_admin():

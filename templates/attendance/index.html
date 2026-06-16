@@ -60,6 +60,7 @@
 </div>
 
 <form method="POST" action="{{ url_for('pages.attendance') }}" class="panel attendance-panel">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="attendanceDate" value="{{ selected_date }}">
     <input type="hidden" name="category" value="{{ selected_category }}">
     <div class="panel-header">

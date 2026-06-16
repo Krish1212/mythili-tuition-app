@@ -4,4 +4,9 @@ __pycache__/
 *.pyo
 .git/
 .pytest_cache/
+.env
+.env.*
+firebase-token.txt
+google-services.json
+*-firebase-adminsdk-*.json
 apiStudents.json

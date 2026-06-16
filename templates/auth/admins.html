@@ -18,6 +18,7 @@
         </div>
         <p class="muted">Enter the Gmail address of a Firebase Auth user. They need to sign in again before the new claim appears in their ID token.</p>
         <form method="POST" action="{{ url_for('auth.admins') }}" class="form-grid">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="grant">
             <label>
                 Email address
@@ -69,6 +70,7 @@
                             <td class="text-end">
                                 {% if admin.claim_admin %}
                                     <form method="POST" action="{{ url_for('auth.admins') }}" class="d-inline">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="action" value="revoke">
                                         <input type="hidden" name="email" value="{{ admin.email }}">
                                         <button class="btn btn-outline-danger btn-sm" type="submit">Remove claim</button>

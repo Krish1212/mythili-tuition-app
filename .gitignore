@@ -1,3 +1,12 @@
+# Project secrets
+.env
+.env.*
+!.env.example
+firebase-token.txt
+google-services.json
+*-firebase-adminsdk-*.json
+apiStudents.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -149,6 +158,7 @@ activemq-data/
 
 # Environments
 .env
+.env.example
 .envrc
 .venv
 env/
