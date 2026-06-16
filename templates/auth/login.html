@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | MH Tuition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <span class="brand-mark">MH</span>
+            <p class="eyebrow">Secure access</p>
+            <h1>Sign in to MH Tuition</h1>
+            <p class="muted">Use the Gmail address approved by the tuition administrator.</p>
+            <div class="alert alert-danger d-none" id="authError" role="alert"></div>
+            <button class="btn btn-primary auth-button" type="button" id="googleLogin">
+                <i class="fa-brands fa-google"></i>
+                Continue with Google
+            </button>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {{ firebase_config|tojson }};
+        firebase.initializeApp(firebaseConfig);
+
+        const authError = document.getElementById('authError');
+        const googleLogin = document.getElementById('googleLogin');
+
+        function showError(message) {
+            authError.textContent = message;
+            authError.classList.remove('d-none');
+            googleLogin.disabled = false;
+        }
+
+        googleLogin.addEventListener('click', async function() {
+            authError.classList.add('d-none');
+            googleLogin.disabled = true;
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await firebase.auth().signInWithPopup(provider);
+                const idToken = await result.user.getIdToken();
+                const response = await fetch('{{ url_for("auth.create_session") }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({idToken})
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Sign-in failed.');
+                }
+                window.location.href = data.redirect || '{{ url_for("index") }}';
+            } catch (error) {
+                showError(error.message || 'Unable to sign in with Google.');
+            }
+        });
+    </script>
+</body>
+</html>

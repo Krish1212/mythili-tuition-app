@@ -1,0 +1,40 @@
+<div class="table-responsive">
+    <table class="table app-table align-middle">
+        <thead>
+            <tr>
+                {% if is_admin and recent_updates is defined %}<th>Student</th>{% endif %}
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Exam/Test</th>
+                <th>Marks</th>
+                <th>Grade</th>
+                <th>Focus area</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in performance_records %}
+                <tr>
+                    {% if is_admin and recent_updates is defined %}
+                        <td>
+                            <strong>{{ record.get('student_name', '') }}</strong>
+                            <small class="d-block muted">Class {{ record.get('standard', '') }}</small>
+                        </td>
+                    {% endif %}
+                    <td>{{ record.get('date', '') }}</td>
+                    <td>{{ record.get('subject', '') }}</td>
+                    <td>
+                        <strong>{{ record.get('assessment_name', '') }}</strong>
+                        {% if record.get('note') %}<small class="d-block muted">{{ record.get('note') }}</small>{% endif %}
+                    </td>
+                    <td>{{ record.get('marks', '') }} / {{ record.get('max_marks', '') }}</td>
+                    <td>{{ record.get('grade', '') or '-' }}</td>
+                    <td>{{ record.get('focus_area', '') or '-' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="{% if is_admin and recent_updates is defined %}7{% else %}6{% endif %}" class="empty-state">No performance updates have been added yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

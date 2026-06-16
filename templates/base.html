@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MH Tuition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/themes/smoothness/jquery-ui.min.css" integrity="sha512-hQrNVZL4jUAHcqbF25UiEFZ/NGCbhAWI9aVAUfI5H+sG17C1Lc4Tm4HpU5A69E1jquKr3f0LnxD3uzfoCj/koQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-shell" id="wrapper">
+        <aside class="sidebar" id="sidebar-wrapper">
+            <a class="brand" href="{{ url_for('index') }}">
+                <span class="brand-mark">MH</span>
+                <span>
+                    <strong>MH Tuition</strong>
+                    <small>Learning Studio</small>
+                </span>
+            </a>
+            <nav class="sidebar-nav">
+                {% if is_admin %}
+                    <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+                    <a class="nav-link {% if request.endpoint and request.endpoint.startswith('students.') %}active{% endif %}" href="{{ url_for('students.all_students') }}"><i class="fa-solid fa-user-graduate"></i>Students</a>
+                    <a class="nav-link {% if request.endpoint == 'auth.admins' %}active{% endif %}" href="{{ url_for('auth.admins') }}"><i class="fa-solid fa-user-shield"></i>Admins</a>
+                {% else %}
+                    <a class="nav-link {% if request.endpoint and request.endpoint.startswith('students.') %}active{% endif %}" href="{{ url_for('students.one_student', id=current_user.student_id) }}"><i class="fa-solid fa-user-graduate"></i>My Profile</a>
+                {% endif %}
+                <a class="nav-link {% if request.endpoint == 'pages.attendance' %}active{% endif %}" href="{{ url_for('pages.attendance') }}"><i class="fa-solid fa-calendar-check"></i>{% if is_admin %}Attendance{% else %}My Attendance{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'pages.performance' %}active{% endif %}" href="{{ url_for('pages.performance') }}"><i class="fa-solid fa-ranking-star"></i>{% if is_admin %}Performance{% else %}My Performance{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'pages.profile' %}active{% endif %}" href="{{ url_for('pages.profile') }}"><i class="fa-solid fa-id-card"></i>Profile</a>
+            </nav>
+        </aside>
+        <main class="content-shell" id="page-content-wrapper">
+            <header class="topbar">
+                <button class="icon-button" id="sidebarToggle" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-title">
+                    <span>Welcome back</span>
+                    <strong>{{ current_user.name if current_user else 'Mythili Tuition Center' }}</strong>
+                </div>
+                <div class="profile-chip">
+                    <i class="fa-solid fa-user"></i>
+                    <span>{{ current_user.role|title if current_user else 'Guest' }}</span>
+                </div>
+                <form action="{{ url_for('auth.logout') }}" method="POST">
+                    <button class="icon-button" type="submit" aria-label="Logout" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </form>
+            </header>
+            <section class="page-container">
+                {% with success_messages = get_flashed_messages(category_filter=['success']) %}
+                    {% if success_messages %}
+                        {% for message in success_messages %}
+                            <div class="alert alert-success app-alert" role="alert">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                {% with errors = get_flashed_messages(category_filter=['error']) %}
+                    {% if errors %}
+                        <div class="alert alert-danger app-alert" role="alert">
+                            {% if errors[0] is string %}
+                                {{ errors[0] }}
+                            {% else %}
+                                {% for error in errors[0] %}<div>{{ error }}</div>{% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js" integrity="sha512-HvOjJrdwNpDbkGJIG2ZNqDlVqMo77qbs4Me4cah0HoDrfhrbA+8SBlZn1KrvAQw7cILLPFJvdwIgphzQmMm+Pw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js" integrity="sha512-MSOo1aY+3pXCOCdGAYoBZ6YGI0aragoQsg1mKKBHXCYPIWxamwOE7Drh+N5CPgGI5SA9IEKJiPjdfqWFWmZtRA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

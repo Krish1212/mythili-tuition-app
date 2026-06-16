@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Student profile</p>
+        <h1>{{ student.get('name', '') }}</h1>
+    </div>
+    {% if is_admin %}
+        <a href="{{ url_for('students.all_students') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-chevron-left"></i> Back</a>
+    {% endif %}
+</div>
+
+<div class="content-grid">
+    <section class="panel">
+        <div class="student-hero">
+            <span class="avatar avatar-large">{{ student.get('name', '')[:1] }}</span>
+            <div>
+                <h2>{{ student.get('name', '') }}</h2>
+                <p>Class {{ student.get('standard', '') }} &middot; {{ student.get('category', '')|replace('_', ' ')|title }}</p>
+            </div>
+        </div>
+        <div class="detail-grid">
+            <span>School<strong>{{ student.get('school', '') }}</strong></span>
+            <span>Father<strong>{{ student.get('father_name', '') }}</strong></span>
+            <span>Mother<strong>{{ student.get('mother_name', '') }}</strong></span>
+            <span>Date of birth<strong>{{ student.get('date_of_birth', 'Not added') }}</strong></span>
+            <span>Mobile<strong>{{ student.get('mobile', '') }}</strong></span>
+            <span>Fees<strong>{{ student.get('fees', '') }}</strong></span>
+            {% if is_admin %}
+                <span>Approved Gmail<strong>{{ student.get('user_email', 'Not linked') }}</strong></span>
+                <span>Firebase UID<strong>{{ student.get('user_uid', 'Pending login') }}</strong></span>
+            {% endif %}
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Attendance</p>
+                <h2>Recent records</h2>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('pages.attendance') }}">{% if is_admin %}Open register{% else %}View all{% endif %}</a>
+        </div>
+        <div class="mini-list">
+            {% for record in attendance_records %}
+                <div class="attendance-record">
+                    <strong>{{ record.date }}</strong>
+                    <span class="status-pill {{ record.status }}">{{ record.status|title }}</span>
+                    {% if record.note %}<small>{{ record.note }}</small>{% endif %}
+                </div>
+            {% else %}
+                <p class="muted">No attendance has been marked for this student yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<section class="panel mt-4">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Performance</p>
+            <h2>Recent updates</h2>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('pages.performance') }}">{% if is_admin %}Add update{% else %}View all{% endif %}</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table app-table align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Exam/Test</th>
+                    <th>Marks</th>
+                    <th>Grade</th>
+                    <th>Focus area</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in performance_records %}
+                    <tr>
+                        <td>{{ record.get('date', '') }}</td>
+                        <td>{{ record.get('subject', '') }}</td>
+                        <td>
+                            <strong>{{ record.get('assessment_name', '') }}</strong>
+                            {% if record.get('note') %}<small class="d-block muted">{{ record.get('note') }}</small>{% endif %}
+                        </td>
+                        <td>{{ record.get('marks', '') }} / {{ record.get('max_marks', '') }}</td>
+                        <td>{{ record.get('grade', '') or '-' }}</td>
+                        <td>{{ record.get('focus_area', '') or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No performance updates have been added yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

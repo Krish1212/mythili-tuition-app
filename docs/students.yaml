@@ -1,0 +1,24 @@
+description: "This API will fetch all the students information from the database"
+tags: 
+  - name: Fetch students information
+produces:
+  - application/json
+responses:
+  "200":
+    description: "Successfull response"
+    schema:
+      title: All Students information
+      type: object
+      example:
+        respCode: 200
+        respDesc: Success
+        students: {
+          'id': 'string',
+          'name': 'string', 
+          'standard': 'string', 
+          'school': 'string', 
+          'parent_name': 'string', 
+          'mobile': 'string', 
+          'category': 'string', 
+          'fees': 'string', 
+        }

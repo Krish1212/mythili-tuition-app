@@ -1,0 +1,33 @@
+description: "This API will fetch all the students information from the database"
+tags: 
+  - name: Fetch students information
+consumes:
+  - string
+produces:
+  - application/json
+parameters:
+  - description: "The parameter should be ID of the selected student"
+    name: 'id'
+    in: 'path'
+    type: 'string'
+    required: True
+    description: 'Id to select the required student'
+responses:
+  "200":
+    description: "Successfull response"
+    schema:
+      title: One Student information
+      type: object
+      example:
+        respCode: 200
+        respDesc: Success
+        students: {
+          'id': 'string',
+          'name': 'string', 
+          'standard': 'string', 
+          'school': 'string', 
+          'parent_name': 'string', 
+          'mobile': 'string', 
+          'category': 'string', 
+          'fees': 'string', 
+        }

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Profile</p>
+        <!-- <h1>Tuition center profile</h1> -->
+    </div>
+</div>
+
+<div class="content-grid">
+    <section class="panel">
+        <div class="student-hero">
+            <span class="brand-mark profile-mark">{% if is_student %}{{ student.get('name', '')[:1] }}{% else %}MH{% endif %}</span>
+            <div>
+                {% if is_student %}
+                    <h2>{{ student.get('name', '') }}</h2>
+                    <p>{{ current_user.email }}</p>
+                {% else %}
+                    <h2>Mythili Tuition Center</h2>
+                    <p>Personalized coaching, attendance tracking, and student management.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="detail-grid">
+            <span>Role<strong>{{ current_user.role|title }}</strong></span>
+            {% if is_student %}
+                <span>Class<strong>{{ student.get('standard', '') }}</strong></span>
+                <span>School<strong>{{ student.get('school', '') }}</strong></span>
+                <span>Program<strong>{{ student.get('category', '')|replace('_', ' ')|title }}</strong></span>
+            {% else %}
+                <span>Location<strong>Tuition Studio</strong></span>
+                <span>Mode<strong>In-person classes</strong></span>
+                <span>System<strong>Firebase + Flask</strong></span>
+            {% endif %}
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">{% if is_student %}Access{% else %}Settings{% endif %}</p>
+                <h2>{% if is_student %}Student account{% else %}Operational notes{% endif %}</h2>
+            </div>
+        </div>
+        <div class="settings-list">
+            {% if is_student %}
+                <div><i class="fa-solid fa-lock"></i><span>Your account is read-only.</span></div>
+                <div><i class="fa-solid fa-envelope"></i><span>{{ current_user.email }}</span></div>
+                <div><i class="fa-solid fa-id-badge"></i><span>{{ current_user.uid }}</span></div>
+            {% else %}
+                <div><i class="fa-solid fa-database"></i><span>Student, attendance, and performance records are stored in Firestore.</span></div>
+                <div><i class="fa-solid fa-calendar-day"></i><span>Attendance is organized by date for fast daily entry.</span></div>
+                <div><i class="fa-solid fa-box"></i><span>The app is ready to run inside Docker.</span></div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

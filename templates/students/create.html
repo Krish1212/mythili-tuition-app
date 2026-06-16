@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Students</p>
+        <h1>New student</h1>
+    </div>
+    <a href="{{ url_for('students.all_students') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-chevron-left"></i> Back</a>
+</div>
+
+{% with errors = get_flashed_messages(category_filter=['error']) %}
+    {% if errors %}
+        <div class="alert alert-danger app-alert">
+            {% for error in errors[0] %}
+                <div>{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<section class="panel form-panel">
+    <form action="{{ url_for('students.create_student') }}" method="POST" id="create-form" class="needs-validation" novalidate>
+        <div class="form-grid">
+            <label>Name<input type="text" class="form-control" name="inputName" id="inputName" required></label>
+            <label>Mobile<input type="text" class="form-control" name="inputMobile" id="inputMobile" required></label>
+            <label>Standard<input type="text" class="form-control" name="inputStandard" id="inputStandard" required></label>
+            <label>School<input type="text" class="form-control" name="inputSchool" id="inputSchool" required></label>
+            <label>Father's name<input type="text" class="form-control" name="inputFatherName" id="inputFatherName" required></label>
+            <label>Mother's name<input type="text" class="form-control" name="inputMotherName" id="inputMotherName" required></label>
+            <label>Date of birth<input type="date" class="form-control" name="inputDateOfBirth" id="inputDateOfBirth"></label>
+            <label>Category
+                <select class="form-select" name="inputCategory" id="inputCategory" required>
+                    <option value="">Select category</option>
+                    <option value="academic">Academic</option>
+                    <option value="prachar_sabha">Prachar Sabha</option>
+                    <option value="both">Both</option>
+                </select>
+            </label>
+            <label>Fees<input type="text" class="form-control" name="inputFees" id="inputFees" required></label>
+            <label>Approved Gmail<input type="email" class="form-control" name="inputUserEmail" id="inputUserEmail" placeholder="student.parent@gmail.com"></label>
+            <label>Firebase UID<input type="text" class="form-control" name="inputUserUid" id="inputUserUid" placeholder="Auto-filled after first login if left blank"></label>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save student</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

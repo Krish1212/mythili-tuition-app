@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if read_only %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Attendance</p>
+        <h1>{{ student.get('name', 'My attendance') }}</h1>
+    </div>
+</div>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Read-only history</p>
+            <h2>Recent records</h2>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table app-table align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in student_attendance %}
+                    <tr>
+                        <td>{{ record.get('date', '') }}</td>
+                        <td><span class="status-pill {{ record.get('status', 'present') }}">{{ record.get('status', 'present')|title }}</span></td>
+                        <td>{{ record.get('note', '') or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="empty-state">No attendance records are available yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% else %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Attendance</p>
+        <h1>Attendance register</h1>
+    </div>
+    <form class="date-filter" method="GET" action="{{ url_for('pages.attendance') }}">
+        <input type="date" class="form-control" name="attendanceDate" value="{{ selected_date }}">
+        <select class="form-select" name="category" aria-label="Filter students by category">
+            <option value="all" {% if selected_category == 'all' %}selected{% endif %}>All categories</option>
+            {% for category in categories %}
+                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category|replace('_', ' ')|title }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-outline-secondary" type="submit"><i class="fa-solid fa-filter"></i> View</button>
+    </form>
+</div>
+
+<form method="POST" action="{{ url_for('pages.attendance') }}" class="panel attendance-panel">
+    <input type="hidden" name="attendanceDate" value="{{ selected_date }}">
+    <input type="hidden" name="category" value="{{ selected_category }}">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Class register</p>
+            <h2>{{ selected_date }}{% if selected_category != 'all' %} &middot; {{ selected_category|replace('_', ' ')|title }}{% endif %}</h2>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save attendance</button>
+    </div>
+    <div class="attendance-list">
+        {% for student in students %}
+            {% set record = attendance_records.get(student['id'], {}) %}
+            {% set current_status = record.get('status', 'present') %}
+            <div class="attendance-row">
+                <div class="student-cell">
+                    <span class="avatar">{{ student['name'][:1] }}</span>
+                    <div>
+                        <strong>{{ student['name'] }}</strong>
+                        <small>Class {{ student['standard'] }} &middot; {{ student['school'] }} &middot; {{ student.get('category', '')|replace('_', ' ')|title }}</small>
+                    </div>
+                </div>
+                <select class="form-select attendance-status status-{{ current_status }}" name="status_{{ student['id'] }}" aria-label="Attendance status for {{ student['name'] }}">
+                    <option value="present" {% if current_status == 'present' %}selected{% endif %}>Present</option>
+                    <option value="absent" {% if current_status == 'absent' %}selected{% endif %}>Absent</option>
+                    <option value="late" {% if current_status == 'late' %}selected{% endif %}>Late</option>
+                    <option value="excused" {% if current_status == 'excused' %}selected{% endif %}>Excused</option>
+                </select>
+                <input class="form-control attendance-note" type="text" name="note_{{ student['id'] }}" value="{{ record.get('note', '') }}" placeholder="Optional note">
+            </div>
+        {% else %}
+            <div class="empty-state">No students are available for this category.</div>
+        {% endfor %}
+    </div>
+</form>
+{% endif %}
+{% endblock %}

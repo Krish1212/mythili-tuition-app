@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Administration</p>
+        <h1>Admin users</h1>
+    </div>
+</div>
+
+<div class="content-grid">
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Grant access</p>
+                <h2>Add an admin</h2>
+            </div>
+        </div>
+        <p class="muted">Enter the Gmail address of a Firebase Auth user. They need to sign in again before the new claim appears in their ID token.</p>
+        <form method="POST" action="{{ url_for('auth.admins') }}" class="form-grid">
+            <input type="hidden" name="action" value="grant">
+            <label>
+                Email address
+                <input class="form-control" type="email" name="email" placeholder="teacher@example.com" required>
+            </label>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-shield"></i> Make admin</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Current admins</p>
+                <h2>Access list</h2>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table app-table align-middle">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Source</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in admins %}
+                        <tr>
+                            <td>
+                                <div class="student-cell">
+                                    <span class="avatar">{{ admin.email[:1] }}</span>
+                                    <span>
+                                        <strong>{{ admin.display_name or admin.email }}</strong>
+                                        <small>{{ admin.email }}</small>
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if admin.bootstrap_admin and admin.claim_admin %}
+                                    <span class="soft-badge">Claim + Env</span>
+                                {% elif admin.bootstrap_admin %}
+                                    <span class="soft-badge">Env</span>
+                                {% else %}
+                                    <span class="soft-badge">Claim</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if admin.claim_admin %}
+                                    <form method="POST" action="{{ url_for('auth.admins') }}" class="d-inline">
+                                        <input type="hidden" name="action" value="revoke">
+                                        <input type="hidden" name="email" value="{{ admin.email }}">
+                                        <button class="btn btn-outline-danger btn-sm" type="submit">Remove claim</button>
+                                    </form>
+                                {% else %}
+                                    <span class="muted">Configured in env</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="empty-state">No admin users found yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

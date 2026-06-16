@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Dashboard</p>
+        <h1>Tuition operations at a glance</h1>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('students.create_student') }}"><i class="fa-solid fa-plus"></i> Add student</a>
+</div>
+
+<div class="metric-grid">
+    <div class="metric-card">
+        <span>Total students</span>
+        <strong>{{ students|length }}</strong>
+        <small>Active enrolments</small>
+    </div>
+    <div class="metric-card accent-green">
+        <span>Present today</span>
+        <strong>{{ attendance_summary.present }}</strong>
+        <small>{{ attendance_summary.date }}</small>
+    </div>
+    <div class="metric-card accent-amber">
+        <span>Late today</span>
+        <strong>{{ attendance_summary.late }}</strong>
+        <small>Needs follow-up</small>
+    </div>
+    <div class="metric-card accent-red">
+        <span>Absent today</span>
+        <strong>{{ attendance_summary.absent }}</strong>
+        <small>Contact parents when needed</small>
+    </div>
+</div>
+
+<div class="content-grid mt-4">
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Quick actions</p>
+                <h2>Daily workflow</h2>
+            </div>
+        </div>
+        <div class="action-grid">
+            <a href="{{ url_for('pages.attendance') }}"><i class="fa-solid fa-calendar-check"></i><span>Mark attendance</span></a>
+            <a href="{{ url_for('students.all_students') }}"><i class="fa-solid fa-users"></i><span>Manage students</span></a>
+            <a href="{{ url_for('pages.performance') }}"><i class="fa-solid fa-chart-simple"></i><span>Review performance</span></a>
+            <a href="{{ url_for('auth.admins') }}"><i class="fa-solid fa-user-shield"></i><span>Manage admins</span></a>
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Recent students</p>
+                <h2>Class list</h2>
+            </div>
+        </div>
+        <div class="mini-list">
+            {% for student in students[:6] %}
+                <a href="{{ url_for('students.one_student', id=student['id']) }}">
+                    <span class="avatar">{{ student['name'][:1] }}</span>
+                    <span>
+                        <strong>{{ student['name'] }}</strong>
+                        <small>Class {{ student['standard'] }} · {{ student['category']|replace('_', ' ')|title }}</small>
+                    </span>
+                </a>
+            {% else %}
+                <p class="muted">No students yet. Add your first student to start using the dashboard.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
