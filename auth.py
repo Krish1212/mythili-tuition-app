@@ -235,8 +235,17 @@ def create_session():
     email = decoded_token.get('email', '').lower()
     uid = decoded_token.get('uid', '')
     name = decoded_token.get('name') or email
+    has_admin_claim = token_has_admin_claim(decoded_token)
+    is_bootstrap_admin = email in admin_emails()
 
-    if token_has_admin_claim(decoded_token) or email in admin_emails():
+    current_app.logger.info(
+        'Firebase sign-in verified for email=%s admin_claim=%s bootstrap_admin=%s',
+        email,
+        has_admin_claim,
+        is_bootstrap_admin,
+    )
+
+    if has_admin_claim or is_bootstrap_admin:
         sync_bootstrap_admin_claim(email)
         session['user'] = {
             'email': email,

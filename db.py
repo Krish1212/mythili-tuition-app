@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 
@@ -6,25 +7,37 @@ from datetime import date
 from firebase_admin import firestore, credentials, get_app, initialize_app
 
 
+def service_account_from_env():
+    service_account_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON')
+    service_account_json_base64 = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON_BASE64')
+    service_account_path = (
+        os.environ.get('FIREBASE_SERVICE_ACCOUNT_PATH')
+        or os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+    )
+
+    if service_account_json_base64:
+        service_account_json = base64.b64decode(service_account_json_base64).decode('utf-8')
+
+    if service_account_json:
+        service_account_info = json.loads(service_account_json)
+        private_key = service_account_info.get('private_key')
+        if private_key:
+            service_account_info['private_key'] = private_key.replace('\\n', '\n')
+        return credentials.Certificate(service_account_info)
+
+    if service_account_path:
+        return credentials.Certificate(service_account_path)
+
+    return credentials.ApplicationDefault()
+
+
 def initialize_firebase_app():
     try:
         return get_app()
     except ValueError:
-        service_account_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON')
-        service_account_path = (
-            os.environ.get('FIREBASE_SERVICE_ACCOUNT_PATH')
-            or os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-        )
         project_id = os.environ.get('FIREBASE_PROJECT_ID')
         options = {'projectId': project_id} if project_id else None
-
-        if service_account_json:
-            cred = credentials.Certificate(json.loads(service_account_json))
-        elif service_account_path:
-            cred = credentials.Certificate(service_account_path)
-        else:
-            cred = credentials.ApplicationDefault()
-        return initialize_app(cred, options=options)
+        return initialize_app(service_account_from_env(), options=options)
 
 class DatabaseService:
     def __init__(self):
