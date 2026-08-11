@@ -46,6 +46,7 @@ class DatabaseService:
         self.db = firestore.client()
         self.student_ref = self.db.collection('students')
         self.attendance_ref = self.db.collection('attendance')
+        self.chat_ref = self.db.collection('chat_threads')
 
     def all_students(self):
         # Get all the documents from the database
@@ -203,4 +204,46 @@ class DatabaseService:
             return summary
         except Exception:
             return {'date': date.today().isoformat(), 'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'total': 0}
+
+    def get_chat_messages(self, student_id, limit=80):
+        try:
+            messages = []
+            query = (
+                self.chat_ref
+                .document(student_id)
+                .collection('messages')
+                .order_by('created_at', direction=firestore.Query.DESCENDING)
+                .limit(limit)
+            )
+            for doc in query.stream():
+                message = doc.to_dict()
+                message['id'] = doc.id
+                messages.append(message)
+            return list(reversed(messages))
+        except Exception:
+            return []
+
+    def create_chat_message(self, student_id, student, message, sender):
+        try:
+            doc_ref = self.chat_ref.document(student_id).collection('messages').document()
+            trimmed_message = message.strip()
+            payload = {
+                'message': trimmed_message,
+                'sender_email': sender.get('email', ''),
+                'sender_name': sender.get('name', '') or sender.get('email', ''),
+                'sender_role': sender.get('role', ''),
+                'created_at': firestore.SERVER_TIMESTAMP,
+            }
+            doc_ref.set(payload)
+            self.chat_ref.document(student_id).set({
+                'student_id': student_id,
+                'student_name': student.get('name', ''),
+                'standard': student.get('standard', ''),
+                'last_message': trimmed_message,
+                'last_sender_role': sender.get('role', ''),
+                'updated_at': firestore.SERVER_TIMESTAMP,
+            }, merge=True)
+            return jsonify({"success": True, "id": doc_ref.id}), 200
+        except Exception as e:
+            return f"Error while saving chat message: {e}"
         

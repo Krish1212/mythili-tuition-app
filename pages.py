@@ -135,3 +135,69 @@ def profile():
     if auth.is_student():
         student = DatabaseService().get_one_student(auth.current_user().get('student_id'))
     return render_template('profile/index.html', student=student)
+
+
+@bp.route('/chat', methods=['GET', 'POST'])
+def chat():
+    db_service = DatabaseService()
+    current_user = auth.current_user() or {}
+
+    if auth.is_student():
+        selected_student_id = current_user.get('student_id')
+        selected_student = db_service.get_one_student(selected_student_id)
+        selected_student = selected_student if isinstance(selected_student, dict) else None
+        students_list = [selected_student] if selected_student else []
+    else:
+        students_list = db_service.all_students()
+        students_list = students_list if isinstance(students_list, list) else []
+        selected_student_id = request.values.get('studentId') or (students_list[0]['id'] if students_list else '')
+        selected_student = None
+        if selected_student_id:
+            selected_student = next(
+                (student for student in students_list if student.get('id') == selected_student_id),
+                None,
+            )
+            if selected_student is None:
+                selected_student = db_service.get_one_student(selected_student_id)
+            if not isinstance(selected_student, dict):
+                selected_student = None
+
+    if not selected_student:
+        if request.method == 'POST':
+            flash('Select a student before sending a message.', 'error')
+            return redirect(url_for('pages.chat'))
+        return render_template(
+            'chat/index.html',
+            students=students_list,
+            selected_student=None,
+            messages=[],
+        )
+
+    if auth.is_student() and selected_student.get('id') != current_user.get('student_id'):
+        flash('You can only view your own chat.', 'error')
+        return redirect(url_for('pages.chat'))
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if not message:
+            flash('Message cannot be empty.', 'error')
+        else:
+            result = db_service.create_chat_message(
+                selected_student['id'],
+                selected_student,
+                message,
+                current_user,
+            )
+            if isinstance(result, str):
+                flash(result, 'error')
+            elif result:
+                flash('Message sent.', 'success')
+        return redirect(url_for('pages.chat', studentId=selected_student['id']))
+
+    messages = db_service.get_chat_messages(selected_student['id'])
+    return render_template(
+        'chat/index.html',
+        students=students_list,
+        selected_student=selected_student,
+        messages=messages,
+    )

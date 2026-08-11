@@ -33,6 +33,7 @@
                 {% endif %}
                 <a class="nav-link {% if request.endpoint == 'pages.attendance' %}active{% endif %}" href="{{ url_for('pages.attendance') }}"><i class="fa-solid fa-calendar-check"></i>{% if is_admin %}Attendance{% else %}My Attendance{% endif %}</a>
                 <a class="nav-link {% if request.endpoint == 'pages.performance' %}active{% endif %}" href="{{ url_for('pages.performance') }}"><i class="fa-solid fa-ranking-star"></i>{% if is_admin %}Performance{% else %}My Performance{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'pages.chat' %}active{% endif %}" href="{{ url_for('pages.chat') }}"><i class="fa-solid fa-comments"></i>{% if is_admin %}Student Chat{% else %}My Chat{% endif %}</a>
                 <a class="nav-link {% if request.endpoint == 'pages.profile' %}active{% endif %}" href="{{ url_for('pages.profile') }}"><i class="fa-solid fa-id-card"></i>Profile</a>
             </nav>
         </aside>

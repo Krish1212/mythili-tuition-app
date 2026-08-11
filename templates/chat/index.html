@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Messages</p>
+        <h1>{% if is_admin %}Student chat{% else %}My chat{% endif %}</h1>
+    </div>
+    {% if is_admin and students %}
+        <form class="chat-selector" method="GET" action="{{ url_for('pages.chat') }}">
+            <select class="form-select" name="studentId" aria-label="Choose student chat">
+                {% for student in students %}
+                    <option value="{{ student['id'] }}" {% if selected_student and selected_student.get('id') == student['id'] %}selected{% endif %}>
+                        {{ student['name'] }} - Class {{ student['standard'] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-outline-secondary" type="submit"><i class="fa-solid fa-comments"></i> Open</button>
+        </form>
+    {% endif %}
+</div>
+
+{% if selected_student %}
+    <section class="chat-shell panel">
+        <div class="chat-header">
+            <div class="student-cell">
+                <span class="avatar">{{ selected_student.get('name', 'S')[:1] }}</span>
+                <div>
+                    <strong>{{ selected_student.get('name', 'Student') }}</strong>
+                    <small>Class {{ selected_student.get('standard', '') }}{% if selected_student.get('school') %} &middot; {{ selected_student.get('school') }}{% endif %}</small>
+                </div>
+            </div>
+            <span class="soft-badge"><i class="fa-solid fa-lock"></i> Private thread</span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages" aria-live="polite">
+            {% for message in messages %}
+                {% set is_own = message.get('sender_email') == current_user.email %}
+                {% set created_at = message.get('created_at') %}
+                <article class="chat-message {% if is_own %}own{% endif %}">
+                    <div class="chat-bubble">
+                        <div class="chat-meta">
+                            <strong>{{ message.get('sender_name') or message.get('sender_email') or 'User' }}</strong>
+                            <span>{{ message.get('sender_role', '')|title }}</span>
+                        </div>
+                        <p>{{ message.get('message', '') }}</p>
+                        {% if created_at %}
+                            <time>{{ created_at.strftime('%d %b %Y, %I:%M %p') }}</time>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="empty-state">No messages yet. Start the conversation here.</div>
+            {% endfor %}
+        </div>
+
+        <form class="chat-compose" method="POST" action="{{ url_for('pages.chat') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="studentId" value="{{ selected_student.get('id') }}">
+            <label class="visually-hidden" for="message">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="2" maxlength="1000" required placeholder="Type a message"></textarea>
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Send</button>
+        </form>
+    </section>
+{% else %}
+    <section class="panel">
+        <div class="empty-state">No student chat is available yet.</div>
+    </section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+</script>
+{% endblock %}
